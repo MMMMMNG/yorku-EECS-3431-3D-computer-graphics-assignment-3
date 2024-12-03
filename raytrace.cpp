@@ -9,6 +9,7 @@
 #include <glm/ext/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale
 #include <glm/ext/matrix_clip_space.hpp> // glm::perspective
 #include <glm/ext/scalar_constants.hpp> // glm::pi
+#include "ray_utils.h"
 
 using namespace std;
 
@@ -114,6 +115,15 @@ int main(int argc, char *argv[]) {
     glm::vec3 two = glm::vec3(3,2,1);
     glm::vec3 out = one + two;
     cout << "out x: "<< out.x << " y: " << out.y << " z: " << out.z;
+
+    double a = 1, b = -3, c = 2;  // Example coefficients
+    double x1, x2;
+
+    if (solveQuadratic(a, b, c, x1, x2)) {
+        std::cout << "Solutions exist: x1 = " << x1 << ", x2 = " << x2 << "\n";
+    } else {
+        std::cout << "No real solutions exist.\n";
+    }
 
     // make sure file is provided
     if (argc != 2) {
