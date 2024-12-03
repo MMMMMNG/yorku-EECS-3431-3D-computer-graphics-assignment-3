@@ -72,8 +72,11 @@ int main(int argc, char *argv[]) {
     }
 
     // set camera and image plane
+    unsigned char *pixels;
+    pixels = new unsigned char [3*scene.x*scene.y];
+
+    rayTraceAllPixels(scene, pixels);
     
-    
-    return save_ImageP6(x, y, outputFile, pixels);
+    save_imageP6(scene.x, scene.y, scene.outputFile, pixels);
     return 0;
 }
