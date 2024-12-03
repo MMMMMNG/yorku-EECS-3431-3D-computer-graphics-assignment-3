@@ -116,15 +116,20 @@ glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &
 
     glm::vec3 ambient (scene.lights.at(s).Ir * scene.spheres.at(s).Ka, scene.lights.at(s).Ig * scene.spheres.at(s).Ka, scene.lights.at(s).Ib * scene.spheres.at(s).Ka);
 // shininess componenet scene.spheres.at(i).n;
-
+glm::vec3 diffuse;
+glm::vec3 specular;
 // calculate for each light in scene
-    // for(int i = 0; i < scene.lights.size(); i++) {
-    //     glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
-    //     float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
-    //     glm::vec3 diffuse = diff * material.diffuse * scene.lights.at(i).Ir;
-    // }
+    for(int i = 0; i < scene.lights.size(); i++) {
+        glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
+        float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
+        diffuse += (diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ir, diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ig, diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ib);
+    
+        glm::vec3 reflectDir = glm::reflect(-lightDir, normal);
+        float spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0f), scene.spheres.at(i).n);
+        specular += (spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ir, spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ig, spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ib);
+    }
 
-    glm::vec3 combinedColor = ambient; //+ diffuse + specular;
+    glm::vec3 combinedColor = ambient + diffuse + specular;
 
     return combinedColor;
 }
