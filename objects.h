@@ -37,9 +37,7 @@ struct Light {
     string name;
     
     // position
-    float posx;
-    float posy;
-    float posz;
+    glm::vec4 pos;
 
     // between [0, 1]
     float Ir;

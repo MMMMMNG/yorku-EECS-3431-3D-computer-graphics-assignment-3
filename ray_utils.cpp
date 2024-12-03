@@ -132,33 +132,25 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
         }
     }
 }
+// s is the index of sphere
+glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, int s) {
+    // check for intersection here
 
-glm::vec3 computeLighting(Scene scene) {
-    // check for intersection 
-    glm::vec3 normal (0, 0, 1);
+    glm::vec3 normal = glm::normalize(direction);
+    glm::vec3 viewingDirection (0, 0, 1); // camera at fixed location
 
-    int i = 0;
+    glm::vec3 ambient (scene.Ir * scene.spheres.at(s).Ka, scene.Ig * scene.spheres.at(s).Ka, scene.Ib * scene.spheres.at(s).Ka);
 
-    float ambientR = scene.Ir * scene.spheres.at(i).Ka;
-    float ambientG = scene.Ig * scene.spheres.at(i).Ka;
-    float ambientB = scene.Ib * scene.spheres.at(i).Ka;
+// shininess componenet scene.spheres.at(i).n;
 
-    // for each light
-    float totalDiffuse;
+// calculate for each light in scene
+    // for(int i = 0; i < scene.lights.size(); i++) {
+    //     glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
+    //     float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
+    //     glm::vec3 diffuse = diff * material.diffuse * scene.lights.at(i).Ir;
+    // }
 
-    for(int i = 0; i < scene.lights.size(); i++) {
-        // float totalDiffuse += (normal * scene.lights.at(i).posx) * scene.spheres.at(i).Kd;
-    }
-
-    float specularR;
-    float specularG;
-    float specularB;
-
-    float lightR = ambientR + totalDiffuse + specularR;
-    float lightG = ambientG + totalDiffuse + specularB;
-    float lightB = ambientB + totalDiffuse + specularB;
-
-    glm::vec3 combinedColor (lightR, lightG, lightB);
+    glm::vec3 combinedColor = ambient; //+ diffuse + specular;
 
     return combinedColor;
 }
