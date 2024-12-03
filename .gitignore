@@ -12,3 +12,4 @@ _deps
 CMakeUserPresets.json
 x64/
 .vscode/
+./raytrace
