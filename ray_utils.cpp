@@ -127,7 +127,7 @@ glm::vec3 shootShadowRays(const glm::vec3 &point, const Scene &scene) {
     // Loop through all lights in the scene
     for (const Light &light : scene.lights) {
         // Compute the direction from the point to the light
-        glm::vec3 lightDir(light.posx - point.x, light.posy - point.y, light.posz - point.z);
+        glm::vec3 lightDir(light.pos.x - point.x, light.pos.y - point.y, light.pos.z - point.z);
         glm::vec3 lightDirNormalized = glm::normalize(lightDir);
 
         // Create a ray from the point towards the light
@@ -185,7 +185,7 @@ glm::vec3 shootShadowRays(const glm::vec3 &point, const Scene &scene) {
     // Loop through all lights in the scene
     for (const Light &light : scene.lights) {
         // Compute the direction from the point to the light
-        glm::vec3 lightDir(light.posx - point.x, light.posy - point.y, light.posz - point.z);
+        glm::vec3 lightDir(light.pos.x - point.x, light.pos.y - point.y, light.pos.z - point.z);
         glm::vec3 lightDirNormalized = glm::normalize(lightDir);
 
         // Create a ray from the point towards the light
