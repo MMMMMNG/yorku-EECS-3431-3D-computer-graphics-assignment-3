@@ -74,6 +74,6 @@ int main(int argc, char *argv[]) {
     // set camera and image plane
     
     
-    return save_ImageP6(x, y, outputFile, pixels);
+    // return save_ImageP6(x, y, outputFile, pixels);
     return 0;
 }

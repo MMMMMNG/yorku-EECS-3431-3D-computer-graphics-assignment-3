@@ -91,10 +91,10 @@ bool findAnyHitWithAllObjects(Ray &ray, Scene &scene){
     for (const Sphere &sphere : scene.spheres) {
         float t;
         if (nearestIntersection(ray, sphere, t)) {
-            return true;
+            return true; // in shadow
         }
     }
-    return false;
+    return false; // no shadow
 }
 
 
@@ -118,7 +118,38 @@ void rayTraceAllPixels(const Scene &scene, std::vector<Ray> &rays) {
             glm::vec4 direction = pixelPos - origin;
             Ray ray = Ray{origin, direction};
 
-            
+            // Compute Lights here?
+
         }
     }
+}
+
+glm::vec3 computeLighting(Scene scene) {
+    // check for intersection 
+    glm::vec3 normal (0, 0, 1);
+
+    int i = 0;
+
+    float ambientR = scene.Ir * scene.spheres.at(i).Ka;
+    float ambientG = scene.Ig * scene.spheres.at(i).Ka;
+    float ambientB = scene.Ib * scene.spheres.at(i).Ka;
+
+    // for each light
+    float totalDiffuse;
+
+    for(int i = 0; i < scene.lights.size(); i++) {
+        // float totalDiffuse += (normal * scene.lights.at(i).posx) * scene.spheres.at(i).Kd;
+    }
+
+    float specularR;
+    float specularG;
+    float specularB;
+
+    float lightR = ambientR + totalDiffuse + specularR;
+    float lightG = ambientG + totalDiffuse + specularB;
+    float lightB = ambientB + totalDiffuse + specularB;
+
+    glm::vec3 combinedColor (lightR, lightG, lightB);
+
+    return combinedColor;
 }
