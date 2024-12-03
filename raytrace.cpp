@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -83,9 +84,9 @@ struct Light {
     int x;
     int y;
 
-// TO ADD HERE: pass in ligth and struct attributes
-    Sphere sphere;
-    Light light;
+// Sphere and Light structure arrays
+    vector<Sphere> spheres;
+    vector<Light> lights;
 
 // Background color as floats [0, 1]
     float bg_r; 
@@ -123,6 +124,94 @@ int main(int argc, char *argv[]) {
 
     while(getline(inputFile, line)) {
         // store values
+        istringstream stream(line); // used to go through each word in line
+        string firstWord;
+
+        stream >> firstWord;
+
+        if(firstWord.compare("NEAR")) {
+            stream >> n;
+        }
+
+        if(firstWord.compare("LEFT")) {
+            stream >> l;
+        }
+
+        if(firstWord.compare("RIGHT")) {
+            stream >> r;
+        }
+
+        if(firstWord.compare("BOTTOM")) {
+            stream >> b;
+        }
+
+        if(firstWord.compare("TOP")) {
+            stream >> t;
+        }
+
+        if(firstWord.compare("RES")) {
+            stream >> x;
+            stream >> y;
+        }
+        
+        if(firstWord.compare("SPHERE")) {
+            Sphere s = {};
+
+            stream >> s.name;
+
+            stream >> s.posx;
+            stream >> s.posy;
+            stream >> s.posz;
+
+            stream >> s.sclx;
+            stream >> s.scly;
+            stream >> s.sclz;
+
+            stream >> s.r;
+            stream >> s.g;
+            stream >> s.b;
+
+            stream >> s.Ka;
+            stream >> s.Kd;
+            stream >> s.Ks;
+            stream >> s.Kr;
+
+            stream >> s.n;
+
+            spheres.push_back(s);
+        }
+
+        if(firstWord.compare("LIGHT")) {
+            Light li = {};
+
+            stream >> li.name;
+
+            stream >> li.posx;
+            stream >> li.posy;
+            stream >> li.posz;
+
+            stream >> li.Ir;
+            stream >> li.Ig;
+            stream >> li.Ib;
+
+            lights.push_back(li);
+        }
+
+        if(firstWord.compare("BACK")) {
+            stream >> bg_r;
+            stream >> bg_g;
+            stream >> bg_b;
+        }
+
+        if(firstWord.compare("AMBIENT")) {
+            stream >> Ir;
+            stream >> Ig;
+            stream >> Ib;
+        }
+
+        if(firstWord.compare("OUTPUT")) {
+            stream >> outputFile;
+        }
     }
 
     // close file
