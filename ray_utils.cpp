@@ -4,6 +4,8 @@
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/vec3.hpp>
 
+#define MAX_DEPTH 4
+
 bool solveQuadratic(float a, float b, float c, float &x1, float &x2) {
     if (a == 0) {  // Degenerate case: Not a quadratic equation
         if (b == 0) {
@@ -46,7 +48,7 @@ bool nearestIntersection(Ray ray, Sphere sphere, float &nearest_t) {
 
     // Transform ray starting point (divide by w for homogeneous coordinate)
     glm::vec4 S_trans = M_inv * ray.S;
-    glm::vec3 S_prime = glm::vec3(S_trans) / S_trans.w;
+    glm::vec3 S_prime = glm::vec3(S_trans);// / S_trans.w;
 
     // Transform ray direction (keep homogeneous w = 0)
     glm::vec4 c_trans = M_inv * ray.c;
@@ -101,11 +103,69 @@ bool findAnyHitWithAllObjects(Ray &ray, const Scene &scene){
     for (const Sphere &sphere : scene.spheres) {
         float t;
         if (nearestIntersection(ray, sphere, t)) {
-            return true; // in shadow
+                return true; // in shadow
         }
     }
     return false; // no shadow
 }
+
+bool findAnyHitWithAllObjectsBetweenLightAndObject(Ray &ray, const Scene &scene){
+    for (const Sphere &sphere : scene.spheres) {
+        float t;
+        if (nearestIntersection(ray, sphere, t)) {
+            if(t > 0.0f && t < 1.0f){ //we only care if it's between the obj & light
+                return true; // in shadow
+            }
+        }
+    }
+    return false; // no shadow
+}
+
+glm::vec3 shootShadowRays(const glm::vec3 &point, const Scene &scene) {
+    glm::vec3 colorInfluence(0.0f, 0.0f, 0.0f);
+
+    // Loop through all lights in the scene
+    for (const Light &light : scene.lights) {
+        // Compute the direction from the point to the light
+        glm::vec3 lightDir(light.posx - point.x, light.posy - point.y, light.posz - point.z);
+        glm::vec3 lightDirNormalized = glm::normalize(lightDir);
+
+        // Create a ray from the point towards the light
+        Ray shadowRay;
+        shadowRay.S = glm::vec4(point, 1.0f);
+        shadowRay.c = glm::vec4(lightDir, 0.0f);
+
+        // Check if the point is in shadow
+        if (!findAnyHitWithAllObjectsBetweenLightAndObject(shadowRay, scene)) {
+            // If no objects are blocking the light, add the light's influence to the color
+            float lightStrength = glm::dot(lightDir, lightDir); // Intensity proportional to the distance
+            glm::vec3 lightColor(light.Ir, light.Ig, light.Ib);
+            colorInfluence += lightColor * lightStrength; // Accumulate light influence
+        }
+    }
+
+    return colorInfluence;
+}
+
+//the meat of the program
+glm::vec3 raytrace(int depth, Ray &ray, Scene &scene){
+    if(depth > MAX_DEPTH ) {
+         return glm::vec3(0,0,0); //we stop after recursion depth 4
+    }
+    Hit hit;
+    if(!findNearestHitWithAllObjects(ray, scene, hit)){
+        return glm::vec3(scene.bg_r, scene.bg_g, scene.bg_b); //return background color if the ray doesn't hit anything
+    }
+
+    //get intersection point
+    glm::vec3 point = evalRay(ray, hit.t);
+
+    //shoot shadow rays
+    glm::vec3 c_local = shootShadowRays(point, scene);
+
+    return c_local  * hit.sphere->color;  
+}
+
 
 
 void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
@@ -125,7 +185,8 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
 
             // Define the ray
             glm::vec4 pixelPos(px, py, pz, 1.0f);
-            glm::vec4 direction = glm::normalize(pixelPos - origin); // Normalize direction
+            glm::vec4 direction = pixelPos - origin; // Normalize not necessary. This also allows us to exclude intersections that
+                                                     // are in front of the nearplane (t < 1)
             Ray ray = Ray{origin, glm::vec4(direction.x, direction.y, direction.z, 0.0f)};
 
             // Determine pixel color
