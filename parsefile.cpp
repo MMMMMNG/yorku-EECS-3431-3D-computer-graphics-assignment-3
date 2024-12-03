@@ -113,4 +113,6 @@ int parsefile(string filename, Scene &scene){
 
     // close file
     inputFile.close();
+    
+    return 0;
 }

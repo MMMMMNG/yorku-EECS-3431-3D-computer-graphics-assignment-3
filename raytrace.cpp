@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
     glm::vec3 out = one + two;
     cout << "out x: "<< out.x << " y: " << out.y << " z: " << out.z;
 
-    double a = 1, b = -3, c = 2;  // Example coefficients
-    double x1, x2;
+    float a = 1, b = -3, c = 2;  // Example coefficients
+    float x1, x2;
 
     if (solveQuadratic(a, b, c, x1, x2)) {
         std::cout << "Solutions exist: x1 = " << x1 << ", x2 = " << x2 << "\n";
