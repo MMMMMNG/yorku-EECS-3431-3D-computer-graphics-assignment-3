@@ -21,6 +21,7 @@ struct Hit {
 bool nearestIntersection(Ray ray, Sphere sphere, float &nearest_t);
 bool findNearestHitWithAllObjects(Ray &ray, Scene &scene, Hit &nearestHit);
 bool findAnyHitWithAllObjects(Ray &ray, Scene &scene);
+void rayTraceAllPixels(const Scene &scene, unsigned char* pixels);
 
 
 #endif //RAY_UTILS_H
