@@ -33,37 +33,47 @@ glm::vec4 evalRay(Ray ray, float t){
 }
 
 
-bool nearestIntersection(Ray ray, Sphere sphere, float &nearest_t){
-    
+bool nearestIntersection(Ray ray, Sphere sphere, float &nearest_t) {
+    // Create the transformation matrix
     glm::mat4 scaleTransform = glm::mat4(
         sphere.scale.x,  0.0, 0.0, 0.0,  // Scale x-axis
         0.0, sphere.scale.y,  0.0, 0.0,  // Scale y-axis
         0.0, 0.0, sphere.scale.z,  0.0,  // Scale z-axis
-        sphere.pos.x, sphere.pos.y, sphere.pos.z, 1.0   // Homogeneous coordinate
+        sphere.pos.x, sphere.pos.y, sphere.pos.z, 1.0   // Translation
     );
 
     glm::mat4 M_inv = glm::inverse(scaleTransform);
 
-    glm::vec3 S_prime = glm::vec3( M_inv * ray.S);
-    glm::vec3 c_prime = glm::vec3( M_inv * ray.c);
+    // Transform ray starting point (divide by w for homogeneous coordinate)
+    glm::vec4 S_trans = M_inv * ray.S;
+    glm::vec3 S_prime = glm::vec3(S_trans) / S_trans.w;
 
-    //get the coefficients
+    // Transform ray direction (keep homogeneous w = 0)
+    glm::vec4 c_trans = M_inv * ray.c;
+    glm::vec3 c_prime = glm::vec3(c_trans);
+
+    // Compute quadratic coefficients
     float a = glm::dot(c_prime, c_prime);
-    float b = 2 * glm::dot(S_prime, c_prime);
-    float c = glm::dot(S_prime, S_prime);
+    float b = 2.0f * glm::dot(S_prime, c_prime);
+    float c = glm::dot(S_prime, S_prime) - 1.0f; // Sphere radius = 1 in transformed space
 
-
-    float t1;
-    float t2;
-    if(!solveQuadratic(a,b,c,t1,t2)){
-        return false;
+    // Solve the quadratic equation
+    float t1, t2;
+    if (!solveQuadratic(a, b, c, t1, t2)) {
+        return false; // No intersection
     }
 
-    if(t1 < t2){
+    // Find the nearest valid t
+    if (t1 > 0.0f && t2 > 0.0f) {
+        nearest_t = glm::min(t1, t2);
+    } else if (t1 > 0.0f) {
         nearest_t = t1;
-    }else{
+    } else if (t2 > 0.0f) {
         nearest_t = t2;
+    } else {
+        return false; // Both intersections are behind the ray's starting point
     }
+
     return true;
 }
 
@@ -110,7 +120,7 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
         for (int i = 0; i < scene.x; ++i) {
             // Compute the pixel position on the near plane
             float px = scene.l + (i + 0.5f) * dx;  // Center of the pixel in X
-            float py = scene.t - (j + 0.5f) * dy;  // Center of the pixel in Y (flip Y-axis)
+            float py = scene.b + (j + 0.5f) * dy;  // Center of the pixel in Y (flip Y-axis)
             float pz = -scene.n;                   // Near plane is at -n in camera space
 
             // Define the ray
