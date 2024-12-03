@@ -74,7 +74,7 @@ struct Scene {
     float Ib;
 
 // Output
-    string outputFile; // no spaces or special characters
+    char outputFile[20]; // no spaces or special characters
 };
 
 #endif //OBJECTS_H

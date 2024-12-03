@@ -57,18 +57,22 @@ int main(int argc, char *argv[]) {
     }
 
     // make sure file is provided
-    if (argc != 2) {
-        cerr << "Usage: " << argv[0] << " <filename>" << endl;
-        return 1;
-    }
+    // if (argc != 2) {
+    //     cerr << "Usage: " << argv[0] << " <filename>" << endl;
+    //     return 1;
+    // }
 
     // Open the file and read
-    string filename = argv[1];
+    string filename = "/mnt/c/Users/jcork/Documents/School/Year3Courses/EECS3431/yorku-EECS-3431-3D-computer-graphics-assignment-3/testSample.txt" ; //argv[1]
     Scene scene;
 
     if(parsefile(filename, scene) > 0){
         return 1;
     }
 
+    // set camera and image plane
+    
+    
+    //return save_ImageP6(x, y, outputFile, pixels);
     return 0;
 }
