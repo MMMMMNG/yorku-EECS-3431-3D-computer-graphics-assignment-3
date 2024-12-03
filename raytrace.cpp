@@ -1,5 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+using namespace std;
 
 /* camera is fixed at origin (right hand cs looking down -z)
 
@@ -26,7 +30,7 @@ OUTPUT <name>
 */
 
 typedef struct {
-    char name[20];
+    string name;
     
     // position
     float posx;
@@ -55,7 +59,7 @@ typedef struct {
 } Sphere;
 
 typedef struct {
-    char name[20];
+    string name;
     
     // position
     float posx;
@@ -94,29 +98,30 @@ typedef struct {
     float Ib;
 
 // Output
-    char outputFile[20]; // no spaces or special characters
+    string outputFile; // no spaces or special characters
 
 int main(int argc, char *argv[]) {
 
     // make sure file is provided
     if (argc != 2) {
-        printf("Usage: %s <filename>\n", argv[0]);
+        cerr << "Usage: " << argv[0] << " <filename>" << endl;
         return 1;
     }
 
     // Open the file for reading
-    FILE *file = fopen(argv[1], "r");
-    if (file == NULL) {
-        perror("Error opening file. Exiting program...");
+    string filename = argv[1];
+    ifstream inputFile(filename);
+
+    if (!inputFile) {
+        cerr << "Error opening file: " << filename << endl;
         return 1;
     }
 
     // read values from the file
-    //smtg like fscanf(file, "%s %f %d", outputFile, &n, &x) but in order of?
-    // or use fgets() to read entire lines as strings and then process them
+    // smtg like sphere.sclx = inputFile >> (data);
 
     // close file
-    fclose(file);
+    inputFile.close();
 
     return 0;
 }
