@@ -17,6 +17,49 @@
     AMBIENT <Ir> <Ig> <Ib>
     OUTPUT <name>*/
 
+typedef struct {
+    char name[20];
+    
+    // position
+    float posx;
+    float posy;
+    float posz;
+    
+    // scale
+    float sclx;
+    float scly;
+    float sclz;
+
+    // color floats [0, 1]
+    float r;
+    float g;
+    float b;
+
+    // between [0,1]
+    float Ka;
+    float Kd;
+    float Ks;
+    float Kr;
+
+    // specular exponent of sphere
+    int n;
+
+} Sphere;
+
+typedef struct {
+    char name[20];
+    
+    // position
+    float posx;
+    float posy;
+    float posz;
+
+    // between [0, 1]
+    float Ir;
+    float Ig;
+    float Ib;
+} Light;
+
 // Near Plane
     float n;
     float l;
@@ -29,6 +72,8 @@
     int y;
 
 // TO ADD HERE: create sphere and light objects w attributes passed in
+    Sphere sphere;
+    Light light;
 
 // Background color as floats [0, 1]
     float r; 
@@ -44,6 +89,7 @@
     char outputFile[20]; // no spaces or special characters
 
 int main(int argc, char *argv[]) {
+
     // make sure file is provided
     if (argc != 2) {
         printf("Usage: %s <filename>\n", argv[0]);
@@ -59,6 +105,7 @@ int main(int argc, char *argv[]) {
 
     // read values from the file
     //smtg like fscanf(file, "%s %f %d", outputFile, &n, &x) but in order of?
+    // or use fgets() to read entire lines as strings and then process them
 
     // close file
     fclose(file);
