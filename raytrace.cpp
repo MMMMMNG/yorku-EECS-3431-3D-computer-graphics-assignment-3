@@ -1,21 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Define variables to store raytracer data
-    /* Syntax:
-    NEAR <n>
-    LEFT <l>
-    RIGHT <r>
-    BOTTOM <b>
-    TOP <t>
-    RES <x> <y>
-    SPHERE <name> <pos x> <pos y> <pos z> <scl x> <scl y> <scl z> <r> <g> <b> <Ka> <Kd> <Ks> <Kr> <n>
-    … // up to 14 additional sphere specifications
-    LIGHT <name> <pos x> <pos y> <pos z> <Ir> <Ig> <Ib>
-    … // up to 9 additional light specifications
-    BACK <r> <g > <b>
-    AMBIENT <Ir> <Ig> <Ib>
-    OUTPUT <name>*/
+/* camera is fixed at origin (right hand cs looking down -z)
+
+TO IMPLEMENT:
+- local illumination
+- reflections
+- shadows
+
+Define variables to store raytracer data
+Syntax:
+NEAR <n>
+LEFT <l>
+RIGHT <r>
+BOTTOM <b>
+TOP <t>
+RES <x> <y>
+SPHERE <name> <pos x> <pos y> <pos z> <scl x> <scl y> <scl z> <r> <g> <b> <Ka> <Kd> <Ks> <Kr> <n>
+… // up to 14 additional sphere specifications
+LIGHT <name> <pos x> <pos y> <pos z> <Ir> <Ig> <Ib>
+… // up to 9 additional light specifications
+BACK <r> <g > <b>
+AMBIENT <Ir> <Ig> <Ib>
+OUTPUT <name>
+*/
 
 typedef struct {
     char name[20];
@@ -76,9 +84,9 @@ typedef struct {
     Light light;
 
 // Background color as floats [0, 1]
-    float r; 
-    float g;
-    float b;
+    float bg_r; 
+    float bg_g;
+    float bg_b;
 
 // Ambient values as floats [0, 1]
     float Ir;
