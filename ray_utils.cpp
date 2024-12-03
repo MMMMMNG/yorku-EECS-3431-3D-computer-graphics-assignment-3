@@ -274,18 +274,12 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
             Ray ray = Ray{origin, glm::vec4(direction.x, direction.y, direction.z, 0.0f)};
 
             // Determine pixel color
+            gdm::vec3 color = raytrace(1, ray, scene);
+
             int pixOffset = 3 * (i + j * scene.x);
-            if (findAnyHitWithAllObjects(ray, scene)) { // object
-            glm::vec3 color = computeLighting(pixelPos, direction, scene, 0);
-           
-                pixels[pixOffset] = color.x * 255;
-                pixels[pixOffset + 1] = color.y * 255;
-                pixels[pixOffset + 2] = color.z * 255;
-            } else { // background
-                pixels[pixOffset] = scene.bg_r * 255;
-                pixels[pixOffset + 1] = scene.bg_g * 255;
-                pixels[pixOffset + 2] = scene.bg_b * 255;
-            }
+            pixels[pixOffset] = color.x * 255;
+            pixels[pixOffset + 1] = color.y * 255;
+            pixels[pixOffset + 2] = color.z * 255;
         }
     }
 }
