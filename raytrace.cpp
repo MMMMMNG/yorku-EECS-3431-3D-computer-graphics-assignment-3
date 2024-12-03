@@ -109,6 +109,12 @@ struct Light {
 
 int main(int argc, char *argv[]) {
 
+    //poc vector math
+    glm::vec3 one = glm::vec3(1,2,3);
+    glm::vec3 two = glm::vec3(3,2,1);
+    glm::vec3 out = one + two;
+    cout << "out x: "<< out.x << " y: " << out.y << " z: " << out.z;
+
     // make sure file is provided
     if (argc != 2) {
         cerr << "Usage: " << argv[0] << " <filename>" << endl;
