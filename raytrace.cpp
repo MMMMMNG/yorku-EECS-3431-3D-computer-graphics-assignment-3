@@ -10,6 +10,7 @@
 #include "ray_utils.h"
 #include "parsefile.h"
 #include "objects.h"
+#include "ppm.h"
 
 using namespace std;
 
@@ -68,8 +69,11 @@ int main(int argc, char *argv[]) {
 
     if(parsefile(filename, scene) > 0){
         return 1;
-    }    
+    }
+
+    // set camera and image plane
     
-    //return save_ImageP6(scene.x, scene.y, scene.outputFile, pixels);
+    
+    return save_ImageP6(x, y, outputFile, pixels);
     return 0;
 }

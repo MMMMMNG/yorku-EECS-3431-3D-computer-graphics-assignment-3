@@ -10,5 +10,5 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 
-add_executable(raytrace raytrace.cpp ray_utils.cpp objects.cpp parsefile.cpp)
+add_executable(raytrace raytrace.cpp ray_utils.cpp objects.cpp parsefile.cpp ppm.cpp)
 target_link_libraries(raytrace PRIVATE glm::glm)

@@ -33,7 +33,7 @@ glm::vec4 evalRay(Ray ray, float t){
 }
 
 
-bool nearestIntersection(Ray ray, Sphere sphere, glm::vec4 &nearestIntersection){
+bool nearestIntersection(Ray ray, Sphere sphere, float &nearest_t){
     
     glm::mat4 scaleTransform = glm::mat4(
         sphere.scale.x,  0.0, 0.0, 0.0,  // Scale x-axis
@@ -60,9 +60,65 @@ bool nearestIntersection(Ray ray, Sphere sphere, glm::vec4 &nearestIntersection)
     }
 
     if(t1 < t2){
-        nearestIntersection = evalRay(ray, t1);
+        nearest_t = t1;
     }else{
-        nearestIntersection = evalRay(ray, t2);
+        nearest_t = t2;
     }
     return true;
+}
+
+bool findNearestHitWithAllObjects(Ray &ray, Scene &scene, Hit &nearestHit) {
+    float closest_t = std::numeric_limits<float>::max(); // Start with a large value
+    bool hitFound = false;
+
+    for (const Sphere &sphere : scene.spheres) {
+        float t;
+        if (nearestIntersection(ray, sphere, t)) {
+            if (t < closest_t && t > 0.0f) { // Update only if t is closer and positive
+                closest_t = t;
+                nearestHit.ray = &ray;
+                nearestHit.sphere = &sphere;
+                nearestHit.t = t;
+                hitFound = true;
+            }
+        }
+    }
+
+    return hitFound;
+}
+
+bool findAnyHitWithAllObjects(Ray &ray, Scene &scene){
+    for (const Sphere &sphere : scene.spheres) {
+        float t;
+        if (nearestIntersection(ray, sphere, t)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void rayTraceAllPixels(const Scene &scene, std::vector<Ray> &rays) {
+    // Origin of the camera
+    glm::vec4 origin(0.0f, 0.0f, 0.0f, 1.0f);
+
+    // Step sizes for each pixel on the near plane
+    float dx = (scene.r - scene.l) / scene.x;
+    float dy = (scene.t - scene.b) / scene.y;
+
+    for (int i = 0; i < scene.x; ++i) {
+        for (int j = 0; j < scene.y; ++j) {
+            // Compute the pixel position on the near plane
+            float px = scene.l + (i + 0.5f) * dx;  // Center of the pixel in X
+            float py = scene.b + (j + 0.5f) * dy;  // Center of the pixel in Y
+            float pz = -scene.n;                   // Near plane is at -n in camera space
+
+            // Define the ray
+            glm::vec4 pixelPos(px, py, pz, 1.0f);
+            glm::vec4 direction = pixelPos - origin;
+            Ray ray = Ray{origin, direction};
+
+            
+        }
+    }
 }
