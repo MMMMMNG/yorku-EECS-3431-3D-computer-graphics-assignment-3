@@ -29,7 +29,7 @@ AMBIENT <Ir> <Ig> <Ib>
 OUTPUT <name>
 */
 
-typedef struct {
+struct Sphere {
     string name;
     
     // position
@@ -56,9 +56,9 @@ typedef struct {
     // specular exponent of sphere
     int n;
 
-} Sphere;
+};
 
-typedef struct {
+struct Light {
     string name;
     
     // position
@@ -70,7 +70,7 @@ typedef struct {
     float Ir;
     float Ig;
     float Ib;
-} Light;
+};
 
 // Near Plane
     float n;
@@ -83,7 +83,7 @@ typedef struct {
     int x;
     int y;
 
-// TO ADD HERE: create sphere and light objects w attributes passed in
+// TO ADD HERE: pass in ligth and struct attributes
     Sphere sphere;
     Light light;
 
@@ -108,17 +108,22 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Open the file for reading
+    // Open the file and read
     string filename = argv[1];
     ifstream inputFile(filename);
 
+    // check for errors opening
     if (!inputFile) {
         cerr << "Error opening file: " << filename << endl;
         return 1;
     }
 
     // read values from the file
-    // smtg like sphere.sclx = inputFile >> (data);
+    string line;
+
+    while(getline(inputFile, line)) {
+        // store values
+    }
 
     // close file
     inputFile.close();
