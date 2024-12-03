@@ -13,3 +13,4 @@ CMakeUserPresets.json
 x64/
 .vscode/
 ./raytrace
+build/
