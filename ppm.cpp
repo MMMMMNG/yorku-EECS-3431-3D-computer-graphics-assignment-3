@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "ppm.h"
 
 // Output in P6 format, a binary file containing:
 // P6
