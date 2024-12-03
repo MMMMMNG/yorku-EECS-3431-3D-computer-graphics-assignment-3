@@ -83,9 +83,9 @@ int parsefile(string filename, Scene &scene){
 
             stream >> li.name;
 
-            stream >> li.posx;
-            stream >> li.posy;
-            stream >> li.posz;
+            stream >> li.pos.x;
+            stream >> li.pos.y;
+            stream >> li.pos.z;
 
             stream >> li.Ir;
             stream >> li.Ig;

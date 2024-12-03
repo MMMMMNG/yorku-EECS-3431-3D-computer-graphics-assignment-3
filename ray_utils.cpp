@@ -1,5 +1,5 @@
 #include "ray_utils.h"
-
+#include <iostream>
 #include <cmath>  // For std::sqrt
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/vec3.hpp>
@@ -167,6 +167,90 @@ glm::vec3 raytrace(int depth, Ray &ray, Scene &scene){
 }
 
 
+bool findAnyHitWithAllObjectsBetweenLightAndObject(Ray &ray, const Scene &scene){
+    for (const Sphere &sphere : scene.spheres) {
+        float t;
+        if (nearestIntersection(ray, sphere, t)) {
+            if(t > 0.0f && t < 1.0f){ //we only care if it's between the obj & light
+                return true; // in shadow
+            }
+        }
+    }
+    return false; // no shadow
+}
+
+glm::vec3 shootShadowRays(const glm::vec3 &point, const Scene &scene) {
+    glm::vec3 colorInfluence(0.0f, 0.0f, 0.0f);
+
+    // Loop through all lights in the scene
+    for (const Light &light : scene.lights) {
+        // Compute the direction from the point to the light
+        glm::vec3 lightDir(light.posx - point.x, light.posy - point.y, light.posz - point.z);
+        glm::vec3 lightDirNormalized = glm::normalize(lightDir);
+
+        // Create a ray from the point towards the light
+        Ray shadowRay;
+        shadowRay.S = glm::vec4(point, 1.0f);
+        shadowRay.c = glm::vec4(lightDir, 0.0f);
+
+        // Check if the point is in shadow
+        if (!findAnyHitWithAllObjectsBetweenLightAndObject(shadowRay, scene)) {
+            // If no objects are blocking the light, add the light's influence to the color
+            float lightStrength = glm::dot(lightDir, lightDir); // Intensity proportional to the distance
+            glm::vec3 lightColor(light.Ir, light.Ig, light.Ib);
+            colorInfluence += lightColor * lightStrength; // Accumulate light influence
+        }
+    }
+
+    return colorInfluence;
+}
+
+//the meat of the program
+glm::vec3 raytrace(int depth, Ray &ray, Scene &scene){
+    if(depth > MAX_DEPTH ) {
+         return glm::vec3(0,0,0); //we stop after recursion depth 4
+    }
+    Hit hit;
+    if(!findNearestHitWithAllObjects(ray, scene, hit)){
+        return glm::vec3(scene.bg_r, scene.bg_g, scene.bg_b); //return background color if the ray doesn't hit anything
+    }
+
+    //get intersection point
+    glm::vec3 point = evalRay(ray, hit.t);
+
+    //shoot shadow rays
+    glm::vec3 c_local = shootShadowRays(point, scene);
+
+    return c_local  * hit.sphere->color;  
+}
+
+
+// s is the index of sphere
+glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, int s) {
+    // check for intersection here
+
+    glm::vec3 normal = glm::normalize(direction);
+    glm::vec3 viewingDirection (0, 0, 1); // camera at fixed location
+
+    glm::vec3 ambient (scene.lights.at(s).Ir * scene.spheres.at(s).Ka, scene.lights.at(s).Ig * scene.spheres.at(s).Ka, scene.lights.at(s).Ib * scene.spheres.at(s).Ka);
+// shininess componenet scene.spheres.at(i).n;
+glm::vec3 diffuse;
+glm::vec3 specular;
+// calculate for each light in scene
+    for(int i = 0; i < scene.lights.size(); i++) {
+        glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
+        float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
+        diffuse += (diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ir, diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ig, diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ib);
+    
+        glm::vec3 reflectDir = glm::reflect(-lightDir, normal);
+        float spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0f), scene.spheres.at(i).n);
+        specular += (spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ir, spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ig, spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ib);
+    }
+
+    glm::vec3 combinedColor = ambient + diffuse + specular;
+
+    return combinedColor;
+}
 
 void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
     // Origin of the camera
@@ -191,45 +275,17 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
 
             // Determine pixel color
             int pixOffset = 3 * (i + j * scene.x);
-            if (findAnyHitWithAllObjects(ray, scene)) {
-                pixels[pixOffset] = 0;
-                pixels[pixOffset + 1] = 0;
-                pixels[pixOffset + 2] = 0;
-            } else {
-                pixels[pixOffset] = 255;
-                pixels[pixOffset + 1] = 255;
-                pixels[pixOffset + 2] = 255;
+            if (findAnyHitWithAllObjects(ray, scene)) { // object
+            glm::vec3 color = computeLighting(pixelPos, direction, scene, 0);
+           
+                pixels[pixOffset] = color.x * 255;
+                pixels[pixOffset + 1] = color.y * 255;
+                pixels[pixOffset + 2] = color.z * 255;
+            } else { // background
+                pixels[pixOffset] = scene.bg_r * 255;
+                pixels[pixOffset + 1] = scene.bg_g * 255;
+                pixels[pixOffset + 2] = scene.bg_b * 255;
             }
         }
     }
-}
-
-glm::vec3 computeLighting(Scene scene) {
-    // check for intersection 
-    glm::vec3 normal (0, 0, 1);
-
-    int i = 0;
-
-    float ambientR = scene.Ir * scene.spheres.at(i).Ka;
-    float ambientG = scene.Ig * scene.spheres.at(i).Ka;
-    float ambientB = scene.Ib * scene.spheres.at(i).Ka;
-
-    // for each light
-    float totalDiffuse;
-
-    for(int i = 0; i < scene.lights.size(); i++) {
-        // float totalDiffuse += (normal * scene.lights.at(i).posx) * scene.spheres.at(i).Kd;
-    }
-
-    float specularR;
-    float specularG;
-    float specularB;
-
-    float lightR = ambientR + totalDiffuse + specularR;
-    float lightG = ambientG + totalDiffuse + specularB;
-    float lightB = ambientB + totalDiffuse + specularB;
-
-    glm::vec3 combinedColor (lightR, lightG, lightB);
-
-    return combinedColor;
 }
