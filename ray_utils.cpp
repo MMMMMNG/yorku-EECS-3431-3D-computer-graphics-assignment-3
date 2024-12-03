@@ -1,5 +1,5 @@
 #include "ray_utils.h"
-
+#include <iostream>
 #include <cmath>  // For std::sqrt
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/vec3.hpp>
@@ -107,6 +107,27 @@ bool findAnyHitWithAllObjects(Ray &ray, const Scene &scene){
     return false; // no shadow
 }
 
+// s is the index of sphere
+glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, int s) {
+    // check for intersection here
+
+    glm::vec3 normal = glm::normalize(direction);
+    glm::vec3 viewingDirection (0, 0, 1); // camera at fixed location
+
+    glm::vec3 ambient (scene.lights.at(s).Ir * scene.spheres.at(s).Ka, scene.lights.at(s).Ig * scene.spheres.at(s).Ka, scene.lights.at(s).Ib * scene.spheres.at(s).Ka);
+// shininess componenet scene.spheres.at(i).n;
+
+// calculate for each light in scene
+    // for(int i = 0; i < scene.lights.size(); i++) {
+    //     glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
+    //     float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
+    //     glm::vec3 diffuse = diff * material.diffuse * scene.lights.at(i).Ir;
+    // }
+
+    glm::vec3 combinedColor = ambient; //+ diffuse + specular;
+
+    return combinedColor;
+}
 
 void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
     // Origin of the camera
@@ -130,37 +151,17 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
 
             // Determine pixel color
             int pixOffset = 3 * (i + j * scene.x);
-            if (findAnyHitWithAllObjects(ray, scene)) {
-                pixels[pixOffset] = 0;
-                pixels[pixOffset + 1] = 0;
-                pixels[pixOffset + 2] = 0;
-            } else {
-                pixels[pixOffset] = 255;
-                pixels[pixOffset + 1] = 255;
-                pixels[pixOffset + 2] = 255;
+            if (findAnyHitWithAllObjects(ray, scene)) { // object
+            glm::vec3 color = computeLighting(pixelPos, direction, scene, 0);
+           
+                pixels[pixOffset] = color.x * 255;
+                pixels[pixOffset + 1] = color.y * 255;
+                pixels[pixOffset + 2] = color.z * 255;
+            } else { // background
+                pixels[pixOffset] = scene.bg_r * 255;
+                pixels[pixOffset + 1] = scene.bg_g * 255;
+                pixels[pixOffset + 2] = scene.bg_b * 255;
             }
         }
     }
-}
-// s is the index of sphere
-glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, int s) {
-    // check for intersection here
-
-    glm::vec3 normal = glm::normalize(direction);
-    glm::vec3 viewingDirection (0, 0, 1); // camera at fixed location
-
-    glm::vec3 ambient (scene.Ir * scene.spheres.at(s).Ka, scene.Ig * scene.spheres.at(s).Ka, scene.Ib * scene.spheres.at(s).Ka);
-
-// shininess componenet scene.spheres.at(i).n;
-
-// calculate for each light in scene
-    // for(int i = 0; i < scene.lights.size(); i++) {
-    //     glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
-    //     float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
-    //     glm::vec3 diffuse = diff * material.diffuse * scene.lights.at(i).Ir;
-    // }
-
-    glm::vec3 combinedColor = ambient; //+ diffuse + specular;
-
-    return combinedColor;
 }
