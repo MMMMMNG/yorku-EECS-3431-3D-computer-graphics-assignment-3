@@ -41,22 +41,6 @@ OUTPUT <name>
 
 
 int main(int argc, char *argv[]) {
-
-    //poc vector math
-    glm::vec3 one = glm::vec3(1,2,3);
-    glm::vec3 two = glm::vec3(3,2,1);
-    glm::vec3 out = one + two;
-    cout << "out x: "<< out.x << " y: " << out.y << " z: " << out.z;
-
-    float a = 1, b = -3, c = 2;  // Example coefficients
-    float x1, x2;
-
-    if (solveQuadratic(a, b, c, x1, x2)) {
-        std::cout << "Solutions exist: x1 = " << x1 << ", x2 = " << x2 << "\n";
-    } else {
-        std::cout << "No real solutions exist.\n";
-    }
-
     // make sure file is provided
     // if (argc != 2) {
     //     cerr << "Usage: " << argv[0] << " <filename>" << endl;
@@ -64,7 +48,7 @@ int main(int argc, char *argv[]) {
     // }
 
     // Open the file and read
-    string filename = "/mnt/c/Users/jcork/Documents/School/Year3Courses/EECS3431/yorku-EECS-3431-3D-computer-graphics-assignment-3/testReflection.txt" ; //argv[1]
+    string filename = "/mnt/c/Users/MNG/OneDrive - FHNW/Documents/Studium/Semester 5 YorkU/3D computer graphics/assignment 3/Project3TestsAndKeys/Project3TestsAndKeys/testSample.txt" ; //argv[1]
     Scene scene;
 
     if(parsefile(filename, scene) > 0){

@@ -4,21 +4,22 @@
 #include "objects.h"
 #include <glm/vec4.hpp> // glm::vec4
 
-bool solveQuadratic(float a, float b, float c, float &x1, float &x2);
+bool solveQuadratic(double a, double b, double c, double &x1, double &x2);
 struct Ray {
-    glm::vec4 S;  // Starting point (x, y, z)
-    glm::vec4 c;  // Direction vector (dx, dy, dz)
+    glm::dvec4 S;  // Starting point (x, y, z)
+    glm::dvec4 c;  // Direction vector (dx, dy, dz)
 };
 
 struct Hit {
     const Ray* ray;        // Pointer to the ray
     const Sphere* sphere;  // Pointer to the sphere
-    float t;               // Parameter t for the hit point
+    double t;               // Parameter t for the hit point
+    glm::dvec3 normal;
 
-    Hit() : ray(nullptr), sphere(nullptr), t(0.0f) {} // Default constructor
+    Hit() : ray(nullptr), sphere(nullptr), t(0.0f), normal(0.0f, 0.0f, 0.0f) {} // Default constructor
 };
 
-bool nearestIntersection(Ray ray, Sphere sphere, float &nearest_t);
+bool nearestIntersection(Ray ray, Sphere sphere, double &nearest_t);
 bool findNearestHitWithAllObjects(Ray &ray, Scene &scene, Hit &nearestHit);
 bool findAnyHitWithAllObjects(Ray &ray, Scene &scene);
 void rayTraceAllPixels(const Scene &scene, unsigned char* pixels);
