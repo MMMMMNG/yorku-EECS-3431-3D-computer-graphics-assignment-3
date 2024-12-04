@@ -108,7 +108,7 @@ bool nearestIntersectionWithNormal(Ray ray, Sphere sphere, double &nearest_t, gl
     );
 
     glm::mat4 M_inv = glm::inverse(scaleTransform);
-    glm::mat4 M_inv_transpose = glm::transpose(M_inv);
+    glm::mat4 M_inv_transpose = glm::transpose(scaleTransform);
 
     // Transform ray starting point (divide by w for homogeneous coordinate)
     glm::dvec4 S_trans = M_inv * ray.S;
@@ -222,7 +222,7 @@ glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light
 {
     // Check for intersection here (not included in this snippet)
 
-    glm::dvec3 viewingDirection(0, 0, 1); // Camera at fixed location (assuming camera is at origin along z-axis)
+    glm::dvec3 viewingDirection(0, 0, -1); // Camera at fixed location (assuming camera is at origin along z-axis)
 
     glm::dvec3 ambient(0.0f, 0.0f, 0.0f);
     glm::dvec3 diffuse(0.0f, 0.0f, 0.0f);
@@ -232,13 +232,13 @@ glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light
         ambient += glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.Ka * currentSphere.color;
 
         // Directional 
-        glm::dvec3 lightDir = glm::normalize(glm::dvec3(light.pos - glm::dvec4(pos, 1.0d))); 
-        double diff = glm::max(glm::dot(normal, lightDir), 0.0d); 
+        glm::dvec3 lightDir = glm::normalize(glm::dvec3(light.pos - glm::dvec4(pos, 1.0))); 
+        double diff = glm::max(glm::dot(normal, lightDir), 0.0); 
         diffuse += diff * currentSphere.Kd * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
     
         // Specular
         glm::dvec3 reflectDir = glm::reflect(-lightDir, normal); // Reflection of the light direction around the normal
-        double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0d), currentSphere.n); // Specular term based on camera angle
+        double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0), currentSphere.n); // Specular term based on camera angle
         specular += spec * currentSphere.Ks * currentSphere.Kr * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
 
     glm::dvec3 combinedColor = ambient + diffuse + specular;
@@ -291,7 +291,12 @@ glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
     // shoot shadow rays
     glm::dvec3 c_local = shootShadowRays(hit, point, scene, ray, *hit.sphere);
 
-    return c_local;
+    glm::dvec4 reflected = glm::dvec4(glm::reflect(glm::dvec3(-ray.c), hit.normal), 0.0);
+    Ray newRay = Ray{glm::dvec4(point, 1), reflected};
+
+    glm::dvec3 reflectedColor = raytrace(depth + 1, newRay, scene);
+
+    return c_local + reflectedColor * hit.sphere->Kr;
 }
 
 
@@ -301,8 +306,8 @@ void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
     glm::dvec4 origin(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Step sizes for each pixel on the near plane
-    double dx = (scene.r - scene.l) / scene.x;
-    double dy = (scene.t - scene.b) / scene.y;
+    double dx = static_cast<double>(scene.r - scene.l) / static_cast<double>(scene.x);
+    double dy = static_cast<double>(scene.t - scene.b) / static_cast<double>(scene.y);
 
     for (int j = 0; j < scene.y; ++j)
     {
