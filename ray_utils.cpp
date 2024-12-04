@@ -181,27 +181,6 @@ glm::vec3 shootShadowRays(const glm::vec3 &point, const Scene &scene)
     return colorInfluence / glm::compMax(colorInfluence);
 }
 
-// the meat of the program
-glm::vec3 raytrace(int depth, Ray &ray, const Scene &scene)
-{
-    if (depth > MAX_DEPTH)
-    {
-        return glm::vec3(0, 0, 0); // we stop after recursion depth 4
-    }
-    Hit hit;
-    if (!findNearestHitWithAllObjects(ray, scene, hit))
-    {
-        return glm::vec3(scene.bg_r, scene.bg_g, scene.bg_b); // return background color if the ray doesn't hit anything
-    }
-
-    // get intersection point
-    glm::vec3 point = evalRay(ray, hit.t);
-
-    // shoot shadow rays
-    glm::vec3 c_local = shootShadowRays(point, scene);
-
-    return c_local * hit.sphere->color;
-}
 
 // s is the index of sphere
 glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, Sphere currentSphere)
@@ -234,6 +213,28 @@ glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &
     glm::vec3 combinedColor = ambient + diffuse + specular;
 
     return combinedColor;
+}
+// the meat of the program
+glm::vec3 raytrace(int depth, Ray &ray, const Scene &scene)
+{
+    if (depth > MAX_DEPTH)
+    {
+        return glm::vec3(0, 0, 0); // we stop after recursion depth 4
+    }
+    Hit hit;
+    if (!findNearestHitWithAllObjects(ray, scene, hit))
+    {
+        return glm::vec3(scene.bg_r, scene.bg_g, scene.bg_b); // return background color if the ray doesn't hit anything
+    }
+
+    // get intersection point
+    glm::vec3 point = evalRay(ray, hit.t);
+
+    // shoot shadow rays
+    //glm::vec3 c_local = shootShadowRays(point, scene);
+
+    //return c_local * hit.sphere->color;
+    return computeLighting(ray.S + ray.c, ray.c, scene, *hit.sphere);
 }
 
 
