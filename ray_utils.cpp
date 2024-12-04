@@ -232,7 +232,7 @@ glm::dvec3 computeLighting(glm::dvec3 rayDir, glm::dvec3 normal, glm::dvec3 pos,
 
     // Specular
     glm::dvec3 reflectDir = glm::reflect(lightDir, normal);                                        // Reflection of the light direction around the normal
-    double spec = glm::pow(glm::dot(reflectDir, -rayDir), currentSphere.n); // Specular term based on camera angle
+    double spec = glm::pow(glm::dot(reflectDir, rayDir), currentSphere.n); // Specular term based on camera angle
     glm::dvec3 specular = spec * currentSphere.Ks * lightColor;
 
     return diffuse + specular;
