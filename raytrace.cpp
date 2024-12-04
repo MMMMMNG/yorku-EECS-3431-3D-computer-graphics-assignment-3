@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
     // }
 
     // Open the file and read
-    string filename = "/mnt/c/Users/jcork/Documents/School/Year3Courses/EECS3431/yorku-EECS-3431-3D-computer-graphics-assignment-3/testReflection.txt" ; //argv[1]
+    string filename = "/mnt/c/Users/jcork/Documents/School/Year3Courses/EECS3431/yorku-EECS-3431-3D-computer-graphics-assignment-3/testAmbient.txt" ; //argv[1]
     Scene scene;
 
     if(parsefile(filename, scene) > 0){
