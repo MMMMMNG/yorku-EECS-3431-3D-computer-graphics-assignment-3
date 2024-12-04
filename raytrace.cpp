@@ -41,14 +41,14 @@ OUTPUT <name>
 
 
 int main(int argc, char *argv[]) {
-    // make sure file is provided
-    // if (argc != 2) {
-    //     cerr << "Usage: " << argv[0] << " <filename>" << endl;
-    //     return 1;
-    // }
+    //make sure file is provided
+    if (argc != 2) {
+        cerr << "Usage: " << argv[0] << " <filename>" << endl;
+        return 1;
+    }
 
     // Open the file and read
-    string filename = "/mnt/c/Users/jcork/Documents/School/Year3Courses/EECS3431/yorku-EECS-3431-3D-computer-graphics-assignment-3/testAmbient.txt" ; //argv[1]
+    string filename = argv[1];
     Scene scene;
 
     if(parsefile(filename, scene) > 0){
