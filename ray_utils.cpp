@@ -206,32 +206,36 @@ glm::vec3 raytrace(int depth, Ray &ray, const Scene &scene)
 // s is the index of sphere
 glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, Sphere currentSphere)
 {
-    // check for intersection here
+    // Check for intersection here (not included in this snippet)
 
-    glm::vec3 normal = glm::normalize(direction);
-    glm::vec3 viewingDirection(0, 0, 1); // camera at fixed location
+    glm::vec3 normal = glm::normalize(glm::vec3(direction)); 
+    glm::vec3 viewingDirection(0, 0, 1); // Camera at fixed location (assuming camera is at origin along z-axis)
 
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular; // shininess componenet scene.spheres.at(i).n;
+    glm::vec3 ambient(0.0f, 0.0f, 0.0f);
+    glm::vec3 diffuse(0.0f, 0.0f, 0.0f);
+    glm::vec3 specular(0.0f, 0.0f, 0.0f);
 
-// calculate for each light in scene
+    // Calculate for each light in the scene
     for(int i = 0; i < scene.lights.size(); i++) {
-        ambient += (scene.lights.at(i).Ir * currentSphere.Ka, scene.lights.at(i).Ig * currentSphere.Ka, scene.lights.at(i).Ib * currentSphere.Ka);
+        // Ambient 
+        ambient += glm::vec3(scene.lights.at(i).Ir, scene.lights.at(i).Ig, scene.lights.at(i).Ib) * currentSphere.Ka * currentSphere.color;
 
-        glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
-        float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
-        diffuse += (diff * currentSphere.Kd * scene.lights.at(i).Ir, diff * currentSphere.Kd * scene.lights.at(i).Ig, diff * currentSphere.Kd * scene.lights.at(i).Ib);
+        // Directional 
+        glm::vec3 lightDir = glm::normalize(glm::vec3(scene.lights.at(i).pos - pixelPos)); 
+        float diff = glm::max(glm::dot(normal, lightDir), 0.0f); 
+        diffuse += diff * currentSphere.Kd * glm::vec3(scene.lights.at(i).Ir, scene.lights.at(i).Ig, scene.lights.at(i).Ib) * currentSphere.color;
     
-        glm::vec3 reflectDir = glm::reflect(-lightDir, normal);
-        float spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0f), currentSphere.n);
-        specular += (spec * currentSphere.Ks * scene.lights.at(i).Ir, spec * currentSphere.Ks * scene.lights.at(i).Ig, spec * currentSphere.Ks * scene.lights.at(i).Ib);
+        // Specular
+        glm::vec3 reflectDir = glm::reflect(-lightDir, normal); // Reflection of the light direction around the normal
+        float spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0f), currentSphere.n); // Specular term based on camera angle
+        specular += spec * currentSphere.Ks * currentSphere.Kr * glm::vec3(scene.lights.at(i).Ir, scene.lights.at(i).Ig, scene.lights.at(i).Ib) * currentSphere.color;
     }
 
     glm::vec3 combinedColor = ambient + diffuse + specular;
 
     return combinedColor;
 }
+
 
 void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
 {
