@@ -4,8 +4,8 @@
 
 #include <string>
 #include <vector>
-#include <glm/vec4.hpp> // glm::vec4
-#include <glm/vec3.hpp> // glm::vec4
+#include <glm/vec4.hpp> // glm::dvec4
+#include <glm/vec3.hpp> // glm::dvec4
 
 using namespace std;
 
@@ -14,19 +14,19 @@ struct Sphere {
     string name;
     
     // position
-    glm::vec4 pos;
+    glm::dvec4 pos;
     
     // scale
-    glm::vec4 scale;
+    glm::dvec4 scale;
 
-    // color floats [0, 1]
-    glm::vec3 color;
+    // color doubles [0, 1]
+    glm::dvec3 color;
 
     // between [0,1]
-    float Ka;
-    float Kd;
-    float Ks;
-    float Kr;
+    double Ka;
+    double Kd;
+    double Ks;
+    double Kr;
 
     // specular exponent of sphere
     int n;
@@ -37,21 +37,21 @@ struct Light {
     string name;
     
     // position
-    glm::vec4 pos;
+    glm::dvec4 pos;
 
     // between [0, 1]
-    float Ir;
-    float Ig;
-    float Ib;
+    double Ir;
+    double Ig;
+    double Ib;
 };
 
 struct Scene {
     // Near Plane
-    float n;
-    float l;
-    float r;
-    float t;
-    float b;
+    double n;
+    double l;
+    double r;
+    double t;
+    double b;
 
 // Resolution
     int x;
@@ -61,15 +61,15 @@ struct Scene {
     vector<Sphere> spheres;
     vector<Light> lights;
 
-// Background color as floats [0, 1]
-    float bg_r; 
-    float bg_g;
-    float bg_b;
+// Background color as doubles [0, 1]
+    double bg_r; 
+    double bg_g;
+    double bg_b;
 
-// Ambient values as floats [0, 1]
-    float Ir;
-    float Ig;
-    float Ib;
+// Ambient values as doubles [0, 1]
+    double Ir;
+    double Ig;
+    double Ib;
 
 // Output
     char outputFile[20]; // no spaces or special characters
