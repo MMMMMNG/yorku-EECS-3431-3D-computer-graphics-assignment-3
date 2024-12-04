@@ -222,7 +222,7 @@ glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light
 {
     // Check for intersection here (not included in this snippet)
 
-    glm::dvec3 viewingDirection(0, 0, 1); // Camera at fixed location (assuming camera is at origin along z-axis)
+    glm::dvec3 viewingDirection(0, 0, -1); // Camera at fixed location (assuming camera is at origin along z-axis)
 
     glm::dvec3 ambient(0.0f, 0.0f, 0.0f);
     glm::dvec3 diffuse(0.0f, 0.0f, 0.0f);
@@ -237,7 +237,7 @@ glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light
         diffuse += diff * currentSphere.Kd * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
     
         // Specular
-        glm::dvec3 reflectDir = glm::reflect(-lightDir, normal); // Reflection of the light direction around the normal
+        glm::dvec3 reflectDir = glm::reflect(lightDir, normal); // Reflection of the light direction around the normal
         double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0d), currentSphere.n); // Specular term based on camera angle
         specular += spec * currentSphere.Ks * currentSphere.Kr * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
 

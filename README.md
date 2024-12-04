@@ -7,7 +7,7 @@ Email: jcorkal@my.yorku.ca Student ID: 219314095
 
 Email: mmmm@my.yorku.ca Student ID: 221828934
 
-We were able to implement a generic raytracer that generates a ppm image. The program reads in a text file and calculates ray-sphere intersections to draw spheres based on the specified location, scale, and color. It takes into account scene background, lighting, and attempts to render reflection and refraction.
+We were able to implement a generic raytracer that generates a ppm image. The program reads in a text file and calculates ray-sphere intersections to draw spheres based on the specified location, scale, and color. It takes into account scene background, lighting, and attempts to render reflection and refraction. We had trouble with the execution of ...
 
 ---------- Learning Resources ----------------
 Phong Illumination Model explanation: http://rodolphe-vaillant.fr/entry/85/phong-illumination-model-cheat-sheet
