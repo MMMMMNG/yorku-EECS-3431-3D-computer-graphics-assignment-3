@@ -218,32 +218,24 @@ bool findAnyHitWithAllObjectsBetweenLightAndObject(Ray &ray, const Scene &scene,
     return false; // no shadow
 }
 
-glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light, Sphere currentSphere)
+glm::dvec3 computeLighting(glm::dvec3 rayDir, glm::dvec3 normal, glm::dvec3 pos, const Light &light, glm::dvec3 lightDir, Sphere currentSphere)
 {
     // Check for intersection here (not included in this snippet)
 
     glm::dvec3 viewingDirection(0, 0, -1); // Camera at fixed location (assuming camera is at origin along z-axis)
 
-    glm::dvec3 ambient(0.0f, 0.0f, 0.0f);
-    glm::dvec3 diffuse(0.0f, 0.0f, 0.0f);
-    glm::dvec3 specular(0.0f, 0.0f, 0.0f);
-
-    // Ambient
-    ambient += glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.Ka * currentSphere.color;
+    glm::dvec3 lightColor = glm::dvec3(light.Ir, light.Ig, light.Ib);
 
     // Directional
-    glm::dvec3 lightDir = glm::normalize(glm::dvec3(light.pos - glm::dvec4(pos, 1.0)));
     double diff = glm::max(glm::dot(normal, lightDir), 0.0);
-    diffuse += diff * currentSphere.Kd * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
+    glm::dvec3 diffuse = diff * currentSphere.Kd * lightColor * currentSphere.color;
 
     // Specular
-    glm::dvec3 reflectDir = glm::reflect(-lightDir, normal);                                        // Reflection of the light direction around the normal
-    double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0), currentSphere.n); // Specular term based on camera angle
-    specular += spec * currentSphere.Ks * currentSphere.Kr * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
+    glm::dvec3 reflectDir = glm::reflect(lightDir, normal);                                        // Reflection of the light direction around the normal
+    double spec = glm::pow(glm::max(glm::dot(reflectDir, -rayDir), 0.0), currentSphere.n); // Specular term based on camera angle
+    glm::dvec3 specular = spec * currentSphere.Ks * lightColor;
 
-    glm::dvec3 combinedColor = ambient + diffuse + specular;
-
-    return combinedColor;
+    return diffuse + specular;
 }
 
 glm::dvec3 shootShadowRays(const Hit &hit, glm::dvec3 point, const Scene &scene, const Ray ray, Sphere sphere)
@@ -254,23 +246,23 @@ glm::dvec3 shootShadowRays(const Hit &hit, glm::dvec3 point, const Scene &scene,
     for (const Light &light : scene.lights)
     {
         // Compute the direction from the point to the light
-        glm::dvec3 lightDir(light.pos.x - point.x, light.pos.y - point.y, light.pos.z - point.z);
+        glm::dvec3 lightDir = glm::dvec3(light.pos) - point;
         double length = glm::length(lightDir);
-        glm::dvec3 lightDirNormalized = lightDir / length;
+        glm::dvec3 lightDirNormalized = glm::normalize(lightDir);// / length;
 
         // Create a ray from the point towards the light
         Ray shadowRay;
         shadowRay.S = glm::dvec4(point, 1.0f);
-        shadowRay.c = glm::dvec4(lightDir, 0.0f);
+        shadowRay.c = glm::dvec4(lightDirNormalized, 0.0f);
 
         // Check if the point is in shadow
         if (!findAnyHitWithAllObjectsBetweenLightAndObject(shadowRay, scene, length))
         {
-            colorInfluence += computeLighting(hit.normal, point, light, sphere);
+            colorInfluence += computeLighting(ray.c, hit.normal, point, light, lightDirNormalized, sphere);
         }
     }
 
-    return glm::clamp(colorInfluence, 0.0d, 1.0d);
+    return glm::clamp(colorInfluence, 0.0, 1.0);
 }
 // the meat of the program
 glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
@@ -280,7 +272,7 @@ glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
         return glm::dvec3(0, 0, 0); // we stop after recursion depth 4
     }
     Hit hit;
-    if (!findNearestHitWithAllObjects(ray, scene, hit, 1.0f))
+    if (!findNearestHitWithAllObjects(ray, scene, hit, 1.0))
     {
         return glm::dvec3(scene.bg_r, scene.bg_g, scene.bg_b); // return background color if the ray doesn't hit anything
     }
@@ -296,7 +288,10 @@ glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
 
     glm::dvec3 reflectedColor = raytrace(depth + 1, newRay, scene);
 
-    return c_local + reflectedColor * hit.sphere->Kr;
+    // Ambient
+    glm::dvec3 ambient = glm::dvec3(scene.Ir, scene.Ig, scene.Ib) * hit.sphere->Ka * hit.sphere->color;
+
+    return c_local + ambient + reflectedColor * hit.sphere->Kr;
 }
 
 void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
