@@ -5,7 +5,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtx/component_wise.hpp>
 
-#define MAX_DEPTH 4
+#define MAX_DEPTH 3
 Sphere currentSphere;
 bool solveQuadratic(float a, float b, float c, float &x1, float &x2)
 {
@@ -142,7 +142,7 @@ bool findAnyHitWithAllObjectsBetweenLightAndObject(Ray &ray, const Scene &scene,
         float t;
         if (nearestIntersection(ray, sphere, t))
         {
-            if (t > 0.0000001f && t < length)
+            if (t > 0.000001f && t < length)
             {                // we only care if it's between the obj & light
                 return true; // in shadow
             }
