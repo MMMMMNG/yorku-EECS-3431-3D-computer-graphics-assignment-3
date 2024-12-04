@@ -108,7 +108,7 @@ bool nearestIntersectionWithNormal(Ray ray, Sphere sphere, double &nearest_t, gl
     );
 
     glm::mat4 M_inv = glm::inverse(scaleTransform);
-    glm::mat4 M_inv_transpose = glm::transpose(scaleTransform);
+    glm::mat4 M_inv_transpose = glm::transpose(M_inv);
 
     // Transform ray starting point (divide by w for homogeneous coordinate)
     glm::dvec4 S_trans = M_inv * ray.S;
@@ -232,7 +232,7 @@ glm::dvec3 computeLighting(glm::dvec3 rayDir, glm::dvec3 normal, glm::dvec3 pos,
 
     // Specular
     glm::dvec3 reflectDir = glm::reflect(lightDir, normal);                                        // Reflection of the light direction around the normal
-    double spec = glm::pow(glm::dot(reflectDir, rayDir), currentSphere.n); // Specular term based on camera angle
+    double spec = glm::pow(glm::dot(reflectDir, -rayDir), currentSphere.n); // Specular term based on camera angle
     glm::dvec3 specular = spec * currentSphere.Ks * lightColor;
 
     return diffuse + specular;
