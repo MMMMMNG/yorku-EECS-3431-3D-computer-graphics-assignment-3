@@ -320,6 +320,7 @@ void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
 
             // Determine pixel color
             glm::dvec3 color = raytrace(1, ray, scene);
+            color = glm::clamp(color, 0.0, 1.0);
 
             int pixOffset = 3 * (i + j * scene.x);
 
