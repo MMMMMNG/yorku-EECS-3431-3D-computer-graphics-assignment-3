@@ -148,7 +148,7 @@ bool nearestIntersectionWithNormal(Ray ray, Sphere sphere, double &nearest_t, gl
         return false; // Both intersections are behind the ray's starting point
     }
 
-    //Compute the intersection point in the transformed space
+    // Compute the intersection point in the transformed space
     glm::dvec3 intersection_local = S_prime + nearest_t * c_prime;
 
     // Compute the normal in the local space of the sphere
@@ -228,18 +228,18 @@ glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light
     glm::dvec3 diffuse(0.0f, 0.0f, 0.0f);
     glm::dvec3 specular(0.0f, 0.0f, 0.0f);
 
-        // Ambient 
-        ambient += glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.Ka * currentSphere.color;
+    // Ambient
+    ambient += glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.Ka * currentSphere.color;
 
-        // Directional 
-        glm::dvec3 lightDir = glm::normalize(glm::dvec3(light.pos - glm::dvec4(pos, 1.0))); 
-        double diff = glm::max(glm::dot(normal, lightDir), 0.0); 
-        diffuse += diff * currentSphere.Kd * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
-    
-        // Specular
-        glm::dvec3 reflectDir = glm::reflect(-lightDir, normal); // Reflection of the light direction around the normal
-        double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0), currentSphere.n); // Specular term based on camera angle
-        specular += spec * currentSphere.Ks * currentSphere.Kr * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
+    // Directional
+    glm::dvec3 lightDir = glm::normalize(glm::dvec3(light.pos - glm::dvec4(pos, 1.0)));
+    double diff = glm::max(glm::dot(normal, lightDir), 0.0);
+    diffuse += diff * currentSphere.Kd * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
+
+    // Specular
+    glm::dvec3 reflectDir = glm::reflect(-lightDir, normal);                                        // Reflection of the light direction around the normal
+    double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0), currentSphere.n); // Specular term based on camera angle
+    specular += spec * currentSphere.Ks * currentSphere.Kr * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
 
     glm::dvec3 combinedColor = ambient + diffuse + specular;
 
@@ -266,7 +266,7 @@ glm::dvec3 shootShadowRays(const Hit &hit, glm::dvec3 point, const Scene &scene,
         // Check if the point is in shadow
         if (!findAnyHitWithAllObjectsBetweenLightAndObject(shadowRay, scene, length))
         {
-           colorInfluence += computeLighting(hit.normal, point, light, sphere);
+            colorInfluence += computeLighting(hit.normal, point, light, sphere);
         }
     }
 
@@ -299,7 +299,6 @@ glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
     return c_local + reflectedColor * hit.sphere->Kr;
 }
 
-
 void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
 {
     // Origin of the camera
@@ -321,14 +320,14 @@ void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
             // Define the ray
             glm::dvec4 pixelPos(px, py, pz, 1.0f);
             glm::dvec4 direction = pixelPos - origin; // Normalize not necessary. This also allows us to exclude intersections that
-                                                     // are in front of the nearplane (t < 1)
+                                                      // are in front of the nearplane (t < 1)
             Ray ray = Ray{origin, glm::dvec4(direction.x, direction.y, direction.z, 0.0f)};
 
             // Determine pixel color
             glm::dvec3 color = raytrace(1, ray, scene);
 
             int pixOffset = 3 * (i + j * scene.x);
-           
+
             pixels[pixOffset] = color.x * 255.0f;
             pixels[pixOffset + 1] = color.y * 255.0f;
             pixels[pixOffset + 2] = color.z * 255.0f;
