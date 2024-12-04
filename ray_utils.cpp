@@ -108,7 +108,7 @@ bool nearestIntersectionWithNormal(Ray ray, Sphere sphere, double &nearest_t, gl
     );
 
     glm::mat4 M_inv = glm::inverse(scaleTransform);
-    glm::mat4 M_inv_transpose = glm::transpose(scaleTransform);
+    glm::mat4 M_inv_transpose = glm::transpose(M_inv);
 
     // Transform ray starting point (divide by w for homogeneous coordinate)
     glm::dvec4 S_trans = M_inv * ray.S;
@@ -226,21 +226,14 @@ glm::dvec3 computeLighting(glm::dvec3 rayDir, glm::dvec3 normal, glm::dvec3 pos,
 
     glm::dvec3 lightColor = glm::dvec3(light.Ir, light.Ig, light.Ib);
 
-    glm::dvec3 ambient(0.0f, 0.0f, 0.0f);
-    glm::dvec3 diffuse(0.0f, 0.0f, 0.0f);
-    glm::dvec3 specular(0.0f, 0.0f, 0.0f);
+    // Directional
+    double diff = glm::max(glm::dot(normal, lightDir), 0.0);
+    glm::dvec3 diffuse = diff * currentSphere.Kd * lightColor * currentSphere.color;
 
-        // Ambient 
-        ambient += glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.Ka * currentSphere.color;
-        // Directional 
-        glm::dvec3 lightDir = glm::normalize(glm::dvec3(light.pos - glm::dvec4(pos, 1.0d))); 
-        double diff = glm::max(glm::dot(normal, lightDir), 0.0d); 
-        diffuse += diff * currentSphere.Kd * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
-    
-        // Specular
-        glm::dvec3 reflectDir = glm::reflect(-lightDir, normal); // Reflection of the light direction around the normal
-        double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0d), currentSphere.n); // Specular term based on camera angle
-        specular += spec * currentSphere.Ks * currentSphere.Kr * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
+    // Specular
+    glm::dvec3 reflectDir = glm::reflect(lightDir, normal);                                        // Reflection of the light direction around the normal
+    double spec = glm::pow(glm::dot(reflectDir, rayDir), currentSphere.n); // Specular term based on camera angle
+    glm::dvec3 specular = spec * currentSphere.Ks * lightColor;
 
     return diffuse + specular;
 }
