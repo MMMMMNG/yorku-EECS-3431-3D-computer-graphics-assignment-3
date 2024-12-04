@@ -6,6 +6,8 @@
 
 #define MAX_DEPTH 4
 
+Sphere currentSphere;
+
 bool solveQuadratic(float a, float b, float c, float &x1, float &x2) {
     if (a == 0) {  // Degenerate case: Not a quadratic equation
         if (b == 0) {
@@ -90,6 +92,7 @@ bool findNearestHitWithAllObjects(Ray &ray, Scene &scene, Hit &nearestHit) {
                 closest_t = t;
                 nearestHit.ray = &ray;
                 nearestHit.sphere = &sphere;
+                currentSphere = sphere;
                 nearestHit.t = t;
                 hitFound = true;
             }
@@ -167,25 +170,27 @@ glm::vec3 raytrace(int depth, Ray &ray, Scene &scene) {
 }
 
 // s is the index of sphere
-glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, int s) {
+glm::vec3 computeLighting(glm::vec4 pixelPos, glm::vec4 direction, const Scene &scene, Sphere currentSphere) {
     // check for intersection here
 
     glm::vec3 normal = glm::normalize(direction);
     glm::vec3 viewingDirection (0, 0, 1); // camera at fixed location
 
-    glm::vec3 ambient (scene.lights.at(s).Ir * scene.spheres.at(s).Ka, scene.lights.at(s).Ig * scene.spheres.at(s).Ka, scene.lights.at(s).Ib * scene.spheres.at(s).Ka);
-// shininess componenet scene.spheres.at(i).n;
-glm::vec3 diffuse;
-glm::vec3 specular;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular; // shininess componenet scene.spheres.at(i).n;
+
 // calculate for each light in scene
     for(int i = 0; i < scene.lights.size(); i++) {
+        ambient += (scene.lights.at(i).Ir * currentSphere.Ka, scene.lights.at(i).Ig * currentSphere.Ka, scene.lights.at(i).Ib * currentSphere.Ka);
+
         glm::vec3 lightDir = glm::normalize(scene.lights.at(i).pos - pixelPos);
         float diff = glm::max(glm::dot(normal, lightDir), 0.0f);
-        diffuse += (diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ir, diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ig, diff * scene.spheres.at(i).Kd * scene.lights.at(i).Ib);
+        diffuse += (diff * currentSphere.Kd * scene.lights.at(i).Ir, diff * currentSphere.Kd * scene.lights.at(i).Ig, diff * currentSphere.Kd * scene.lights.at(i).Ib);
     
         glm::vec3 reflectDir = glm::reflect(-lightDir, normal);
-        float spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0f), scene.spheres.at(i).n);
-        specular += (spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ir, spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ig, spec * scene.spheres.at(i).Ks * scene.lights.at(i).Ib);
+        float spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0f), currentSphere.n);
+        specular += (spec * currentSphere.Ks * scene.lights.at(i).Ir, spec * currentSphere.Ks * scene.lights.at(i).Ig, spec * currentSphere.Ks * scene.lights.at(i).Ib);
     }
 
     glm::vec3 combinedColor = ambient + diffuse + specular;
@@ -217,7 +222,7 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
             // Determine pixel color
             int pixOffset = 3 * (i + j * scene.x);
             if (findAnyHitWithAllObjects(ray, scene)) { // object
-            glm::vec3 color = computeLighting(pixelPos, direction, scene, 0);
+            glm::vec3 color = computeLighting(pixelPos, direction, scene, currentSphere);
            
                 pixels[pixOffset] = color.x * 255;
                 pixels[pixOffset + 1] = color.y * 255;

@@ -10,3 +10,4 @@ Email: mmmm@my.yorku.ca Student ID: 221828934
 We were able to ...
 
 ---------- Learning Resources ----------------
+Phong Illumination Model explanation: http://rodolphe-vaillant.fr/entry/85/phong-illumination-model-cheat-sheet
