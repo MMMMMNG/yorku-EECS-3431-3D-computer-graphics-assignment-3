@@ -220,6 +220,8 @@ void rayTraceAllPixels(const Scene &scene, unsigned char* pixels) {
             Ray ray = Ray{origin, glm::vec4(direction.x, direction.y, direction.z, 0.0f)};
 
             // Determine pixel color
+            gdm::vec3 color = raytrace(1, ray, scene);
+
             int pixOffset = 3 * (i + j * scene.x);
             if (findAnyHitWithAllObjects(ray, scene)) { // object
             glm::vec3 color = computeLighting(pixelPos, direction, scene, currentSphere);
