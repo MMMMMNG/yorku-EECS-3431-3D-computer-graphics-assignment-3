@@ -258,7 +258,7 @@ glm::dvec3 shootShadowRays(const Hit &hit, glm::dvec3 point, const Scene &scene,
         // Check if the point is in shadow
         if (!findAnyHitWithAllObjectsBetweenLightAndObject(shadowRay, scene, length))
         {
-            colorInfluence += computeLighting(ray.c, hit.normal, point, light, lightDirNormalized, sphere);
+            colorInfluence += computeLighting(glm::normalize(ray.c), hit.normal, point, light, lightDirNormalized, sphere);
         }
     }
 
