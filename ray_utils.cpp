@@ -108,7 +108,7 @@ bool nearestIntersectionWithNormal(Ray ray, Sphere sphere, double &nearest_t, gl
     );
 
     glm::mat4 M_inv = glm::inverse(scaleTransform);
-    glm::mat4 M_inv_transpose = glm::transpose(M_inv);
+    glm::mat4 M_inv_transpose = glm::transpose(scaleTransform);
 
     // Transform ray starting point (divide by w for homogeneous coordinate)
     glm::dvec4 S_trans = M_inv * ray.S;
@@ -148,7 +148,7 @@ bool nearestIntersectionWithNormal(Ray ray, Sphere sphere, double &nearest_t, gl
         return false; // Both intersections are behind the ray's starting point
     }
 
-    //Compute the intersection point in the transformed space
+    // Compute the intersection point in the transformed space
     glm::dvec3 intersection_local = S_prime + nearest_t * c_prime;
 
     // Compute the normal in the local space of the sphere
@@ -218,11 +218,13 @@ bool findAnyHitWithAllObjectsBetweenLightAndObject(Ray &ray, const Scene &scene,
     return false; // no shadow
 }
 
-glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light, Sphere currentSphere)
+glm::dvec3 computeLighting(glm::dvec3 rayDir, glm::dvec3 normal, glm::dvec3 pos, const Light &light, glm::dvec3 lightDir, Sphere currentSphere)
 {
     // Check for intersection here (not included in this snippet)
 
     glm::dvec3 viewingDirection(0, 0, -1); // Camera at fixed location (assuming camera is at origin along z-axis)
+
+    glm::dvec3 lightColor = glm::dvec3(light.Ir, light.Ig, light.Ib);
 
     glm::dvec3 ambient(0.0f, 0.0f, 0.0f);
     glm::dvec3 diffuse(0.0f, 0.0f, 0.0f);
@@ -230,20 +232,17 @@ glm::dvec3 computeLighting(glm::dvec3 normal, glm::dvec3 pos, const Light &light
 
         // Ambient 
         ambient += glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.Ka * currentSphere.color;
-
         // Directional 
         glm::dvec3 lightDir = glm::normalize(glm::dvec3(light.pos - glm::dvec4(pos, 1.0d))); 
         double diff = glm::max(glm::dot(normal, lightDir), 0.0d); 
         diffuse += diff * currentSphere.Kd * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
     
         // Specular
-        glm::dvec3 reflectDir = glm::reflect(lightDir, normal); // Reflection of the light direction around the normal
+        glm::dvec3 reflectDir = glm::reflect(-lightDir, normal); // Reflection of the light direction around the normal
         double spec = glm::pow(glm::max(glm::dot(viewingDirection, reflectDir), 0.0d), currentSphere.n); // Specular term based on camera angle
         specular += spec * currentSphere.Ks * currentSphere.Kr * glm::dvec3(light.Ir, light.Ig, light.Ib) * currentSphere.color;
 
-    glm::dvec3 combinedColor = ambient + diffuse + specular;
-
-    return combinedColor;
+    return diffuse + specular;
 }
 
 glm::dvec3 shootShadowRays(const Hit &hit, glm::dvec3 point, const Scene &scene, const Ray ray, Sphere sphere)
@@ -254,23 +253,23 @@ glm::dvec3 shootShadowRays(const Hit &hit, glm::dvec3 point, const Scene &scene,
     for (const Light &light : scene.lights)
     {
         // Compute the direction from the point to the light
-        glm::dvec3 lightDir(light.pos.x - point.x, light.pos.y - point.y, light.pos.z - point.z);
+        glm::dvec3 lightDir = glm::dvec3(light.pos) - point;
         double length = glm::length(lightDir);
-        glm::dvec3 lightDirNormalized = lightDir / length;
+        glm::dvec3 lightDirNormalized = glm::normalize(lightDir);// / length;
 
         // Create a ray from the point towards the light
         Ray shadowRay;
         shadowRay.S = glm::dvec4(point, 1.0f);
-        shadowRay.c = glm::dvec4(lightDir, 0.0f);
+        shadowRay.c = glm::dvec4(lightDirNormalized, 0.0f);
 
         // Check if the point is in shadow
         if (!findAnyHitWithAllObjectsBetweenLightAndObject(shadowRay, scene, length))
         {
-           colorInfluence += computeLighting(hit.normal, point, light, sphere);
+            colorInfluence += computeLighting(ray.c, hit.normal, point, light, lightDirNormalized, sphere);
         }
     }
 
-    return glm::clamp(colorInfluence, 0.0d, 1.0d);
+    return glm::clamp(colorInfluence, 0.0, 1.0);
 }
 // the meat of the program
 glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
@@ -280,7 +279,7 @@ glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
         return glm::dvec3(0, 0, 0); // we stop after recursion depth 4
     }
     Hit hit;
-    if (!findNearestHitWithAllObjects(ray, scene, hit, 1.0f))
+    if (!findNearestHitWithAllObjects(ray, scene, hit, 1.0))
     {
         return glm::dvec3(scene.bg_r, scene.bg_g, scene.bg_b); // return background color if the ray doesn't hit anything
     }
@@ -291,9 +290,16 @@ glm::dvec3 raytrace(int depth, Ray &ray, const Scene &scene)
     // shoot shadow rays
     glm::dvec3 c_local = shootShadowRays(hit, point, scene, ray, *hit.sphere);
 
-    return c_local;
-}
+    glm::dvec4 reflected = glm::dvec4(glm::reflect(glm::dvec3(-ray.c), hit.normal), 0.0);
+    Ray newRay = Ray{glm::dvec4(point, 1), reflected};
 
+    glm::dvec3 reflectedColor = raytrace(depth + 1, newRay, scene);
+
+    // Ambient
+    glm::dvec3 ambient = glm::dvec3(scene.Ir, scene.Ig, scene.Ib) * hit.sphere->Ka * hit.sphere->color;
+
+    return c_local + ambient + reflectedColor * hit.sphere->Kr;
+}
 
 void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
 {
@@ -301,8 +307,8 @@ void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
     glm::dvec4 origin(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Step sizes for each pixel on the near plane
-    double dx = (scene.r - scene.l) / scene.x;
-    double dy = (scene.t - scene.b) / scene.y;
+    double dx = static_cast<double>(scene.r - scene.l) / static_cast<double>(scene.x);
+    double dy = static_cast<double>(scene.t - scene.b) / static_cast<double>(scene.y);
 
     for (int j = 0; j < scene.y; ++j)
     {
@@ -316,14 +322,14 @@ void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
             // Define the ray
             glm::dvec4 pixelPos(px, py, pz, 1.0f);
             glm::dvec4 direction = pixelPos - origin; // Normalize not necessary. This also allows us to exclude intersections that
-                                                     // are in front of the nearplane (t < 1)
+                                                      // are in front of the nearplane (t < 1)
             Ray ray = Ray{origin, glm::dvec4(direction.x, direction.y, direction.z, 0.0f)};
 
             // Determine pixel color
             glm::dvec3 color = raytrace(1, ray, scene);
 
             int pixOffset = 3 * (i + j * scene.x);
-           
+
             pixels[pixOffset] = color.x * 255.0f;
             pixels[pixOffset + 1] = color.y * 255.0f;
             pixels[pixOffset + 2] = color.z * 255.0f;
