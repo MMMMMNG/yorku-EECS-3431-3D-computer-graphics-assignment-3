@@ -6,7 +6,7 @@
 #include <glm/gtx/component_wise.hpp>
 
 #define MAX_DEPTH 3
-Sphere currentSphere;
+
 bool solveQuadratic(float a, float b, float c, float &x1, float &x2)
 {
     if (a == 0)
@@ -97,7 +97,7 @@ bool nearestIntersection(Ray ray, Sphere sphere, float &nearest_t)
     return true;
 }
 
-bool findNearestHitWithAllObjects(Ray &ray, const Scene &scene, Hit &nearestHit)
+bool findNearestHitWithAllObjects(Ray &ray, const Scene &scene, Hit &nearestHit, float minimum_t)
 {
     float closest_t = std::numeric_limits<float>::max(); // Start with a large value
     bool hitFound = false;
@@ -107,12 +107,11 @@ bool findNearestHitWithAllObjects(Ray &ray, const Scene &scene, Hit &nearestHit)
         float t;
         if (nearestIntersection(ray, sphere, t))
         {
-            if (t < closest_t && t > 0.0f)
+            if (t < closest_t && t > minimum_t)
             { // Update only if t is closer and positive
                 closest_t = t;
                 nearestHit.ray = &ray;
                 nearestHit.sphere = &sphere;
-                currentSphere = sphere;
                 nearestHit.t = t;
                 hitFound = true;
             }
@@ -222,7 +221,7 @@ glm::vec3 raytrace(int depth, Ray &ray, const Scene &scene)
         return glm::vec3(0, 0, 0); // we stop after recursion depth 4
     }
     Hit hit;
-    if (!findNearestHitWithAllObjects(ray, scene, hit))
+    if (!findNearestHitWithAllObjects(ray, scene, hit, 1.0f))
     {
         return glm::vec3(scene.bg_r, scene.bg_g, scene.bg_b); // return background color if the ray doesn't hit anything
     }
@@ -266,17 +265,10 @@ void rayTraceAllPixels(const Scene &scene, unsigned char *pixels)
             glm::vec3 color = raytrace(1, ray, scene);
 
             int pixOffset = 3 * (i + j * scene.x);
-            if (findAnyHitWithAllObjects(ray, scene)) { // object
-            glm::vec3 color = computeLighting(pixelPos, direction, scene, currentSphere);
            
-                pixels[pixOffset] = color.x * 255;
-                pixels[pixOffset + 1] = color.y * 255;
-                pixels[pixOffset + 2] = color.z * 255;
-            } else { // background
-                pixels[pixOffset] = scene.bg_r * 255;
-                pixels[pixOffset + 1] = scene.bg_g * 255;
-                pixels[pixOffset + 2] = scene.bg_b * 255;
-            }
+            pixels[pixOffset] = color.x * 255;
+            pixels[pixOffset + 1] = color.y * 255;
+            pixels[pixOffset + 2] = color.z * 255;
         }
     }
 }
