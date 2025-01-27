@@ -3,9 +3,9 @@ Assignment 3: Raytracer
 
 Jessica Corkal & Marius Gebhardt
 
-Email: jcorkal@my.yorku.ca Student ID: 219314095
+Email: jcorkal@my.yorku.ca 
 
-Email: mmmm@my.yorku.ca Student ID: 221828934
+Email: mmmm@my.yorku.ca 
 
 We were able to implement a generic raytracer that generates a ppm image saved to ../out/build/raytracepreset. The program reads in a text file and calculates ray-sphere intersections to draw spheres based on the specified location, scale, and color. It takes into account scene background, lighting, and attempts to render reflection and refraction. We had trouble with the execution of rendering specular reflection. The image shows highlight colors, but doesn't correctly show the specular effect as a gradient / fused with the object's color; we are not sure why.
 
